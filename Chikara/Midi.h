@@ -70,18 +70,39 @@ struct NoteEvent
 
 // TODO (Khang): constexpr meta-programming is too hard, using macros for now...
 //                         C      C#    D      D#    E      F      F#    G      G#    A      A#    B
-#define SHARP_TABLE_OCTAVE false, true, false, true, false, false, true, false, true, false, true, false,
-#define SEVEN_SHARP_TABLE_OCTAVES SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE
+// #define SHARP_TABLE_OCTAVE false, true, false, true, false, false, true, false, true, false, true, false,
+// #define SEVEN_SHARP_TABLE_OCTAVES SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE SHARP_TABLE_OCTAVE
+// Done. Requires at least c++14 (Alex)...
+
+template<typename int_type>
+constexpr bool is_sharp(int_type key)
+{
+  key %= 12; 
+  if (key < 5)
+    return (key & 1);
+  else
+    return !(key & 1);
+}
+
+template<size_t table_size>
+constexpr std::array<bool, table_size> get_sharp_table()
+{
+  std::array<bool, table_size> table{}; // default construction of array
+  for (size_t i = 0; i < table_size; ++i)
+    table[i] = is_sharp(i);
+  return table;
+}
 
 // 21 full octaves, 5 notes left over
 // 257 because 256 key mode needs 257 keys displayed
-constexpr std::array<bool, 257> g_sharp_table = {
+constexpr std::array<bool, 257> g_sharp_table = get_sharp_table<257>();
+/*constexpr std::array<bool, 257> g_sharp_table = {
   SEVEN_SHARP_TABLE_OCTAVES
   SEVEN_SHARP_TABLE_OCTAVES
   SEVEN_SHARP_TABLE_OCTAVES
-//C      C#    D      D#    E
-  false, true, false, true, false
-};
+  //C      C#    D      D#    E
+    false, true, false, true, false
+};*/
 
 class BufferedReader
 {
